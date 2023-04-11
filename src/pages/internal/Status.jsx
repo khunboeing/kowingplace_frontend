@@ -30,7 +30,6 @@ export const Status = () => {
     console.log("submit_data", data);
     const config = {
       method: "post",
-      maxBodyLength: Infinity,
       url: `${import.meta.env.VITE_API_BACKEND}/kowing/getReserveByStat`,
       headers: {
         "Content-Type": "application/json",

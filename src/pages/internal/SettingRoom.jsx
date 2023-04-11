@@ -338,12 +338,16 @@ export const SettingRoom = () => {
                   </div>
                 </div>
                 <div className="flex justify-between">
-                  <button
-                    className="w-28 bg-red-300 font-medium hover:bg-red-400 rounded-full duration-300 p-2 px-4"
-                    onClick={() => deleteRoom(room.roomId)}
-                  >
-                    ลบห้อง
-                  </button>
+                  {room.branchToRoomId === 0 ? (
+                    ""
+                  ) : (
+                    <button
+                      className="w-28 bg-red-300 font-medium hover:bg-red-400 rounded-full duration-300 p-2 px-4"
+                      onClick={() => deleteRoom(room.roomId)}
+                    >
+                      ลบห้อง
+                    </button>
+                  )}
                   {room.branchToRoomId === 0 ? (
                     <button
                       onClick={() => submitBtn("create", room.branchToRoomId)}

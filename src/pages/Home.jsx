@@ -56,11 +56,10 @@ export const Home = () => {
         // console.log(JSON.stringify(response.data));
         const result = response.data.sort((a, b) => Math.random() - 0.5);
         setDataCoWorks(result);
-        const _newFeat = [...Array(6)].reduce(
-          (acc,r) => {
-            const index = Math.floor(Math.random() * result.length);
-            return [...acc, result[index]];
-          },[]);
+        const _newFeat = [...Array(6)].reduce((acc, r) => {
+          const index = Math.floor(Math.random() * result.length);
+          return [...acc, result[index]];
+        }, []);
         set_TempDataCoWorks(_newFeat);
       })
       .catch((error) => {
@@ -76,22 +75,20 @@ export const Home = () => {
             <h1 className="font-medium mr-2">Co-Working แนะนำ</h1>
             <FaRegThumbsUp />
           </div>
-          {dataCoWorks.length > 0 && (
-            <Carousel
-              slides={dataCoWorks?.map((r) => ({
-                id: r.id,
-                name: r.name,
-                image: r.picture,
-              }))}
-            />
-          )}
+          {/* {dataCoWorks.length > 0 && ( */}
+          <Carousel
+            slides={dataCoWorks?.map((r) => ({
+              id: r.id,
+              name: r.name,
+              image: r.picture,
+            }))}
+          />
+          {/* )} */}
           <div className="w-full">
-            <div className="">
-              <div className="flex flex-no-wrap gap-x-2 md:gap-x-5 overflow-x-scroll scrolling-touch items-center pb-4">
-                {dataCoWorks?.map((data, idx) => (
-                  <CardLink key={`data_${idx}`} data={data} />
-                ))}
-              </div>
+            <div className="flex flex-no-wrap gap-x-2 md:gap-x-5 overflow-x-scroll scrolling-touch items-center pb-4">
+              {dataCoWorks?.map((data, idx) => (
+                <CardLink key={`data_${idx}`} data={data} />
+              ))}
             </div>
           </div>
         </div>
@@ -103,12 +100,10 @@ export const Home = () => {
             <p>(ยังไม่เปิดใช้งาน)</p>
           </div>
           <div className="w-full">
-            <div className="">
-              <div className="flex flex-no-wrap gap-x-2 md:gap-x-5 overflow-x-scroll scrolling-touch items-center pb-4">
-                {_tempDataCoWorks?.map((data, idx) => (
-                  <CardLink key={`data_${idx}`} data={data} />
-                ))}
-              </div>
+            <div className="flex flex-no-wrap gap-x-2 md:gap-x-5 overflow-x-scroll scrolling-touch items-center pb-4">
+              {_tempDataCoWorks?.map((data, idx) => (
+                <CardLink key={`data_${idx}`} data={data} />
+              ))}
             </div>
           </div>
         </div>

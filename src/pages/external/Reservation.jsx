@@ -27,7 +27,7 @@ export const Reservation = () => {
       method: "post",
       url: `${
         import.meta.env.VITE_API_BACKEND
-      }/kowing/showtheRoomBookedbyUserExternal`,
+      }/kowing/getBookRoomByUserExternal`,
       headers: {
         "Content-Type": "application/json",
       },
@@ -62,25 +62,32 @@ export const Reservation = () => {
               className="w-full grid grid-cols-1 md:grid-cols-8 gap-2 bg-orange-100/20 items-center border-2 border-l-4 border-l-green-400 rounded-lg shadow-md p-2 md:p-4 mb-4"
             >
               <Link
-                to={`/branch/${bookRoom.cowork.id}`}
+                to={`/branch/${bookRoom.room.BranchToRoom.coWork.id}`}
                 className="text-center md:text-left"
               >
-                <p>{bookRoom.cowork.name}</p>
+                <p>{bookRoom.room.BranchToRoom.coWork.name}</p>
               </Link>
               <Link
-                to={`/branch/${bookRoom.cowork.id}`}
+                to={`/branch/${bookRoom.room.id}`}
                 className="text-center md:text-left"
               >
-                <p>{bookRoom.roomRate.room.name}</p>
+                <p>{bookRoom.room.name}</p>
               </Link>
-              <div className="text-center md:text-right">
+              <div className="text-center">
                 <p>{new Date(bookRoom.startTime).toDateString()}</p>
               </div>
               <div className="text-center">
                 <p>
                   {new Date(bookRoom.startTime)
                     .toLocaleTimeString("TH-th")
-                    .substring(0, 5)}
+                    .substring(0, 5) +
+                    " - " +
+                    new Date(
+                      new Date(bookRoom.startTime).getTime() +
+                        bookRoom.roomRate.duration.duration * 60 * 60 * 1000
+                    )
+                      .toLocaleTimeString("TH-th")
+                      .substring(0, 5)}
                 </p>
               </div>
               <div className="text-center md:text-left">

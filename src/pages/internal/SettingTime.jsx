@@ -7,26 +7,12 @@ import { PartnerMainNav } from "../../components";
 export const SettingTime = () => {
   const { userId, token } = useContext(ContextUserId);
   const [dataCoWork, setDataCoWork] = useState({});
-  const [open, setOpen] = useState([
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-  ]);
+  const [open, setOpen] = useState([...Array(7)].map((r) => false));
   const [openTime, setOpenTime] = useState([0, 0, 0, 0, 0, 0, 0]);
   const [closedTime, setClosedTime] = useState([0, 0, 0, 0, 0, 0, 0]);
-  const [openClosed24Hours, setOpenClosed24Hours] = useState([
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-  ]);
+  const [openClosed24Hours, setOpenClosed24Hours] = useState(
+    [...Array(7)].map((r) => false)
+  );
   const navigate = useNavigate();
 
   console.log("userId", userId);

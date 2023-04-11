@@ -3,15 +3,21 @@ import { Calendar } from "../../components";
 import { useState, useEffect, useRef, useContext } from "react";
 import logo from "@/assets/images/letter-k.png";
 import axios from "axios";
-import { FaUsers } from "react-icons/fa";
+import {
+  FaUsers,
+  FaCalendarAlt,
+  FaClock,
+  FaMoneyBillAlt,
+} from "react-icons/fa";
 import { ContextUserId } from "../../App";
+import {
+  UseGetBookRoomAndOpenCloseAndDuration,
+  useGetRoomAndOpenDayByCoWorkId,
+} from "../../hooks";
 
 export const Reserve = () => {
   const { coWorkId } = useParams();
   const { userId, token } = useContext(ContextUserId);
-  const [dayOpen, setDayOpen] = useState({});
-  const [timeAvailableDB, setTimeAvailableDB] = useState({});
-  const [availableStartTime, setAvailableStartTime] = useState([]);
   const [tabSelect, setTabSelect] = useState("room");
   const [selectTime, setSelectTime] = useState({
     roomRateId: 0,
@@ -20,7 +26,6 @@ export const Reserve = () => {
     price: 0,
   });
   const [modal, setModal] = useState({ show: false, page: "" });
-  const [dataRooms, setDataRooms] = useState([]);
   const [selectRoom, setSelectRoom] = useState(0);
   const [selectDateTime, setSelectDateTime] = useState({
     year: 0,
@@ -30,67 +35,19 @@ export const Reserve = () => {
     key: 0,
   });
   const [reserveCode, setReserveCode] = useState("");
+  // custom hooks
+  const { dataCoWork } = useGetRoomAndOpenDayByCoWorkId({ coWorkId });
+  const { availableStartTime } =
+    UseGetBookRoomAndOpenCloseAndDuration({
+      selectDateTime,
+      selectRoom,
+      setTabSelect,
+    });
+
   const modalRef = useRef(null);
   const navigate = useNavigate();
 
-  console.log("userId", userId);
-
-  //get all room of branch id
-  useEffect(() => {
-    const getDayOpen = () => {
-      const data = JSON.stringify({
-        coWorkId: Number(coWorkId),
-      });
-
-      const config = {
-        method: "post",
-        maxBodyLength: Infinity,
-        url: `${import.meta.env.VITE_API_BACKEND}/kowing/getOpenDay`,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        data: data,
-      };
-
-      axios
-        .request(config)
-        .then((response) => {
-          console.log(JSON.stringify(response.data));
-          setDayOpen(response.data);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    };
-
-    const getAllRoom = () => {
-      const data = JSON.stringify({
-        coWorkId: Number(coWorkId),
-      });
-      console.log("data", data);
-      const config = {
-        method: "post",
-        url: `${import.meta.env.VITE_API_BACKEND}/kowing/getRoomByCoWorkId`,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        data: data,
-      };
-
-      axios
-        .request(config)
-        .then((response) => {
-          console.log(JSON.stringify(response.data));
-          setDataRooms(response.data);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    };
-
-    getDayOpen();
-    getAllRoom();
-  }, []);
+  // console.log("userId", userId);
 
   useEffect(() => {
     const checkIfClickedOutside = (e) => {
@@ -118,105 +75,8 @@ export const Reserve = () => {
     };
   }, [modal]);
 
-  //set btn time available
   useEffect(() => {
-    const genTimeChoice = () => {
-      console.log("setAvailableStartTime");
-      console.log("selectDateTime", selectDateTime);
-      console.log("selectRoom", selectRoom);
-      const currentHour = new Date().getHours();
-      console.log("currentHour", currentHour);
-
-      const submitTime = new Date(
-        selectDateTime.year,
-        selectDateTime.month - 1,
-        selectDateTime.date,
-        0,
-        0,
-        0
-      );
-      console.log("submitTime", submitTime.toString());
-      console.log("submitTime.toISOString()", submitTime.toISOString());
-
-      const data = JSON.stringify({
-        startTime: submitTime.toISOString(),
-        day: selectDateTime.day,
-        roomId: selectRoom,
-        coWorkId: dataRooms.BranchToRoom[0].coWorkId,
-      });
-      console.log("data", data);
-
-      const config = {
-        method: "post",
-        url: `${import.meta.env.VITE_API_BACKEND}/kowing/bookDurationRoom`,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        data: data,
-      };
-
-      axios
-        .request(config)
-        .then((response) => {
-          console.log(JSON.stringify(response.data));
-          console.log("result get available time", response.data);
-          setTimeAvailableDB(response.data);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    };
-
-    selectDateTime.year !== 0 &&
-      selectDateTime.month !== 0 &&
-      selectDateTime.date !== 0 &&
-      selectDateTime.day !== 0 &&
-      selectRoom !== 0 &&
-      genTimeChoice();
-  }, [selectDateTime, selectRoom]);
-
-  useEffect(() => {
-    const getStartTime = () => {
-      const startTime = timeAvailableDB.duration
-        ?.sort((a, b) => a.duration - b.duration)
-        .map((type) => {
-          const inOpenTime = timeAvailableDB.slotTime.filter(
-            (slot) => slot + type.duration <= timeAvailableDB.close
-          );
-          console.log("inOpenTime", inOpenTime);
-
-          const available = inOpenTime.filter((r) => {
-            console.log("type", type.duration);
-            const checkEachHour = [...Array(type.duration)].map((k, idx) =>
-              timeAvailableDB.slotTime.includes(r + idx)
-            );
-            console.log("checkEachHour", checkEachHour);
-            console.log(
-              "result",
-              checkEachHour.every((r) => r)
-            );
-            return checkEachHour.every((r) => r);
-          });
-
-          // //console.log({ type: type, start: available });
-
-          return {
-            roomRateId: type.roomRateId,
-            type: type.duration,
-            start: available,
-          };
-        });
-
-      console.log("startTime", startTime);
-      setAvailableStartTime(startTime);
-      console.log("selectRoom", selectRoom);
-      setTabSelect("time");
-    };
-
-    Object.keys(timeAvailableDB).length > 0 && getStartTime();
-  }, [timeAvailableDB]);
-
-  useEffect(() => {
+    console.log("setSelectTime", selectTime);
     selectDateTime.year !== 0 &&
       selectDateTime.month !== 0 &&
       selectDateTime.date !== 0 &&
@@ -242,18 +102,15 @@ export const Reserve = () => {
           `${selectDateTime.year}-${selectDateTime.month}-${selectDateTime.date} ${selectTime.time}:00:00.000`
         ).toISOString(),
         roomId: selectRoom,
-        coWorkId: Number(coWorkId),
         roomRateId: selectTime.roomRateId,
         userExId: userId.userId,
         price: selectTime.price,
       });
-      console.log("reserveFunc", data);
+      console.log("submitData", data);
       const config = {
         method: "post",
         maxBodyLength: Infinity,
-        url: `${
-          import.meta.env.VITE_API_BACKEND
-        }/kowing/getVerifyCodeByUserConfirmBooking`,
+        url: `${import.meta.env.VITE_API_BACKEND}/kowing/createBookRoom`,
         headers: {
           "Content-Type": "application/json",
           token: token,
@@ -294,7 +151,7 @@ export const Reserve = () => {
 
   const strSelectRoomOnHead =
     selectRoom !== 0
-      ? dataRooms?.BranchToRoom.filter((room) => room.roomId === selectRoom)[0]
+      ? dataCoWork?.BranchToRoom.filter((room) => room.roomId === selectRoom)[0]
           .room.name
       : "เลือกห้องประชุม";
 
@@ -303,13 +160,13 @@ export const Reserve = () => {
       <div className="w-full lg:w-3/4 flex justify-center items-center gap-y-8">
         <div className="mainBlock w-full flex flex-col md:flex-row gap-4">
           <div className="calendarBlock w-full md:w-7/12 flex flex-col gap-4">
-            <div>
-              <h1 className="text-2xl">{dataRooms?.name}</h1>
+            <div className="h-8">
+              <h1 className="text-2xl">{dataCoWork?.name}</h1>
             </div>
             <Calendar
               selectDateTime={selectDateTime}
               setSelectDateTime={setSelectDateTime}
-              dayOpen={dayOpen}
+              dayOpen={dataCoWork?.OpenCloseBoolean}
             />
           </div>
 
@@ -336,9 +193,9 @@ export const Reserve = () => {
                 <div className="text-center mb-4">
                   <p>กรุณาเลือกห้องประชุมที่ต้องการ</p>
                 </div>
-                {dataRooms?.BranchToRoom?.length > 0 && (
+                {dataCoWork?.BranchToRoom?.length > 0 && (
                   <div className="roomList flex md:max-h-[400px] flex-col gap-y-4 overflow-y-auto">
-                    {dataRooms?.BranchToRoom?.map((room) => (
+                    {dataCoWork?.BranchToRoom?.map((room) => (
                       <button
                         key={room.room.name}
                         onClick={() => setSelectRoom(room.room.id)}
@@ -373,14 +230,7 @@ export const Reserve = () => {
                         key={`type_${type.type}`}
                       >
                         <p className="sticky top-0 bg-white text-center font-medium">
-                          {type.type} ชั่วโมง ราคา ฿
-                          {
-                            dataRooms.BranchToRoom.filter(
-                              (room) => room.roomId === selectRoom
-                            )[0].room.RoomRate.filter(
-                              (rate) => rate.id === type.roomRateId
-                            )[0].price
-                          }
+                          {type.type} ชั่วโมง ราคา ฿{type.price}
                         </p>
                         {type.start.map((time, idx) => (
                           <button
@@ -390,11 +240,7 @@ export const Reserve = () => {
                                 roomRateId: type.roomRateId,
                                 type: type.type,
                                 time: time,
-                                price: dataRooms.BranchToRoom.filter(
-                                  (room) => room.roomId === selectRoom
-                                )[0].room.RoomRate.filter(
-                                  (rate) => rate.id === type.roomRateId
-                                )[0].price,
+                                price: type.price,
                               })
                             }
                             className={`${
@@ -430,14 +276,14 @@ export const Reserve = () => {
               className="md:w-2/5 flex flex-col gap-y-4 bg-white rounded-lg p-8"
             >
               <h1 className="text-2xl font-medium text-center">
-                {dataRooms?.name}
+                {dataCoWork?.name}
               </h1>
               <div className="w-full flex justify-center">
                 <div className="w-fit flex flex-col gap-y-2">
                   <h1 className="text-xl font-medium">
-                    <span className="text-sm font-normal">คุณได้เลือก</span>{" "}
+                    <span className="text-sm font-normal">คุณได้เลือก :</span>{" "}
                     {
-                      dataRooms?.BranchToRoom.filter(
+                      dataCoWork?.BranchToRoom.filter(
                         (room) => room.roomId === selectRoom
                       )[0].room.name
                     }
@@ -446,34 +292,26 @@ export const Reserve = () => {
                       className="inline-block text-orange-400 mx-2"
                     />
                     {
-                      dataRooms?.BranchToRoom.filter(
+                      dataCoWork?.BranchToRoom.filter(
                         (room) => room.roomId === selectRoom
                       )[0].room.capacity
                     }
                   </h1>
-                  <p className="text-xl font-medium">
-                    <span className="text-sm font-normal">วันที่</span>{" "}
+                  <p className="flex gap-x-2 items-center text-xl font-medium">
+                    <FaCalendarAlt className="text-orange-400" />
                     {`${selectDateTime.date}/${selectDateTime.month}/${selectDateTime.year}`}{" "}
-                    <span className="text-sm">เวลา</span>{" "}
+                    <FaClock className="text-orange-400" />
                     {`${selectTime.time}.00-${
                       selectTime.time + selectTime.type
                     }.00`}
                   </p>
-                  <p>
-                    รูปแบบการจอง :{" "}
-                    <span className="text-xl font-medium">
-                      {`${selectTime.type} ชั่วโมง`}
+                  <p className="flex gap-x-2 items-center text-xl font-medium">
+                    <span className="text-base font-normal">
+                      รูปแบบการจอง :
                     </span>
-                  </p>
-                  <p>
-                    ราคา :{" "}
-                    {
-                      dataRooms?.BranchToRoom.filter(
-                        (room) => room.roomId === selectRoom
-                      )[0].room.RoomRate.filter(
-                        (rate) => rate.id === selectTime.roomRateId
-                      )[0].price
-                    }
+                    {`${selectTime.type} ชั่วโมง`}
+                    <FaMoneyBillAlt className="text-orange-400" />฿
+                    {`${selectTime.price}`}
                   </p>
                 </div>
               </div>
@@ -493,7 +331,7 @@ export const Reserve = () => {
             >
               <h1 className="text-2xl font-medium text-center">
                 {
-                  dataRooms?.BranchToRoom.filter(
+                  dataCoWork?.BranchToRoom.filter(
                     (room) => room.roomId === selectRoom
                   )[0].room.name
                 }

@@ -45,58 +45,72 @@ export const ReserveList = ({ getData, dataCoWork }) => {
 
   return (
     <div className="listQuery w-full flex md:block flex-col justify-center pl-12 md:pl-0">
-      {dataCoWork?.coWork?.bookRoom?.map((bookRoom, idx) => (
-        <div
-          key={`room_${idx + 1}`}
-          className={`w-full sm:w-1/2 md:w-full md:grid md:grid-cols-5 gap-2 bg-orange-100/20 items-center border-2 border-l-4 ${borderColor(
-            bookRoom.status
-          )} rounded-lg shadow-md p-2 md:p-4 mb-4`}
-        >
-          <div className="text-center md:text-left mb-2 md:mb-0">
-            <p className="font-medium">{bookRoom.roomRate.room.name}</p>
-          </div>
-
-          <div className="w-1/2 md:w-full md:text-left inline-block">
-            <p>{new Date(bookRoom.startTime).toDateString()}</p>
-          </div>
-
-          <div className="w-1/2 md:w-full md:flex flex-wrap inline-block">
-            <p className="w-1/3 inline-block">
-              {new Date(bookRoom.startTime)
-                .toLocaleTimeString("TH-th")
-                .substring(0, 5)}
-            </p>
-            <p className="w-1/3 inline-block">{bookRoom.roomRate.duration.duration} hr(s).</p>
-            <p className="w-1/3 inline-block">฿{bookRoom.price}</p>
-          </div>
-
+      {dataCoWork?.coWork?.BranchToRoom[0].room?.BookRoom?.map(
+        (bookRoom, idx) => (
           <div
-            className="md:text-left "
-            title={bookRoom.vertifyCode.verifyCode}
+            key={`room_${idx + 1}`}
+            className={`w-full flex flex-wrap justify-center sm:w-1/2 md:w-full md:grid md:grid-cols-7 gap-2 bg-orange-100/20 items-center border-2 border-l-4 ${borderColor(
+              bookRoom.status
+            )} rounded-lg shadow-md p-2 md:p-4 mb-4`}
           >
-            <p className="text-center text-ellipsis overflow-hidden">
-              {bookRoom.vertifyCode.verifyCode}
-            </p>
-          </div>
-          <button
-            onClick={() => updateStatus(bookRoom.id, bookRoom.status)}
-            className="w-full text-center rounded-md bg-orange-200/50 shadow-md hover:bg-orange-200/70 duration-300 p-2 px-4"
-            disabled={bookRoom.status === "DONE"}
-          >
-            <p
-              className={`${
-                bookRoom.status === "PENDING"
-                  ? "text-orange-300"
-                  : bookRoom.status === "ON_GOING"
-                  ? "text-green-500"
-                  : "text-slate-500"
-              } font-medium`}
+            <div className="text-center w-full md:text-left mb-2 md:mb-0">
+              <p className="font-medium">
+                {dataCoWork.coWork.BranchToRoom[0].room.name}
+              </p>
+            </div>
+
+            <div className="text-center">
+              <p>{new Date(bookRoom.startTime).toDateString()}</p>
+            </div>
+
+            <div className="text-center">
+              <p>
+                {new Date(bookRoom.startTime)
+                  .toLocaleTimeString("TH-th")
+                  .substring(0, 5) +
+                  " - " +
+                  new Date(
+                    new Date(bookRoom.startTime).getTime() +
+                      bookRoom.roomRate.duration.duration * 60 * 60 * 1000
+                  )
+                    .toLocaleTimeString("TH-th")
+                    .substring(0, 5)}
+              </p>
+            </div>
+
+            <div className="text-center">
+              <p>{bookRoom.roomRate.duration.duration} hr(s).</p>
+            </div>
+
+            <div className="text-center">
+              <p>฿{bookRoom.price}</p>
+            </div>
+
+            <div className="text-left" title={bookRoom.vertifyCode.verifyCode}>
+              <p className="text-center text-ellipsis overflow-hidden">
+                {bookRoom.vertifyCode.verifyCode}
+              </p>
+            </div>
+            <button
+              onClick={() => updateStatus(bookRoom.id, bookRoom.status)}
+              className="w-full text-center rounded-md bg-orange-200/50 shadow-md hover:bg-orange-200/70 duration-300 p-2 px-4"
+              disabled={bookRoom.status === "DONE"}
             >
-              {bookRoom.status}
-            </p>
-          </button>
-        </div>
-      ))}
+              <p
+                className={`${
+                  bookRoom.status === "PENDING"
+                    ? "text-orange-300"
+                    : bookRoom.status === "ON_GOING"
+                    ? "text-green-500"
+                    : "text-slate-500"
+                } font-medium`}
+              >
+                {bookRoom.status}
+              </p>
+            </button>
+          </div>
+        )
+      )}
     </div>
   );
 };
